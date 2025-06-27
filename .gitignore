@@ -1,0 +1,7 @@
+*.exe
+*.out
+*.log
+bin/
+vendor/
+.env
+coverage/*

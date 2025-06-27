@@ -1,0 +1,20 @@
+name: 'Secure SBOM Action'
+description: 'Sign and verify SBOMs using Secure SBOM API'
+author: 'ShiftLeftCyber'
+inputs:
+  keyid:
+    description: 'Key ID to use for signing or verifying'
+    required: true
+  api_key:
+    description: 'API key for authenticating with Secure SBOM API'
+    required: true
+  action:
+    description: 'Action to perform: sign or verify'
+    required: true
+    default: sign
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+branding:
+  icon: 'upload-cloud'
+  color: 'blue'
