@@ -50,18 +50,20 @@ jobs:
       - name: Build Docker image
         run: docker build -t test-image .
 
-  golangci:
-    name: Lint (golangci-lint)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-go@v5
-        with:
-          go-version-file: 'go.mod'
-
-      - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v4
-        with:
-          version: v1.59.0
-          args: --out-format=colored-line-number ./cmd
+  # TODO: Add this back in
+  # Currently its not scanning the cmd dir its
+  #golangci:
+  #  name: Lint (golangci-lint)
+  #  runs-on: ubuntu-latest
+  #  steps:
+  #    - uses: actions/checkout@v4
+  #
+  #    - uses: actions/setup-go@v5
+  #      with:
+  #        go-version-file: 'go.mod'
+  #
+  #    - name: Run golangci-lint
+  #      uses: golangci/golangci-lint-action@v4
+  #      with:
+  #        version: v1.59.0
+  #        args: --out-format=colored-line-number ./cmd
