@@ -49,8 +49,8 @@ jobs:
 ## Inputs
 
 | Name           | Description                            | Required | Default  |
-|----------------|----------------------------------------|----------|----------|
-| `SBOM_FILE`     | Path to the SBOM to sign or verify     | :X       | sign     |
-| `KEY_ID`       | Key ID to use for signing/verification | ✅       | —        |
-| `API_KEY`      | API Key (use GitHub Secret)            | ✅       | —        |
-| `ACTION`       | `sign` or `verify`                     | ✅       | —        |
+|----------------|----------------------------------------|---------- |----------|
+| `SBOM_FILE`     | Path to the SBOM to sign or verify    | 🚫        | sign     |
+| `KEY_ID`       | Key ID to use for signing/verification | ✅        | —        |
+| `API_KEY`      | API Key (use GitHub Secret)            | ✅        | —        |
+| `ACTION`       | `sign` or `verify`                     | ✅        | —        |
