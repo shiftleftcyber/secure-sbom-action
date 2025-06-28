@@ -59,9 +59,9 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'
-          cache: true
 
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v4
         with:
           version: v1.59.0
+          args: --out-format=colored-line-number ./cmd
