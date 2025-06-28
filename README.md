@@ -20,11 +20,11 @@ jobs:
       - uses: actions/checkout@v4
       - name: Sign SBOM
         uses: shiftleftcyber/secure-sbom-action@v1
-        env:
-          SBOM_FILE: <</path/to/sbom/file>>
-          SECURE_SBOM_ACTION: sign
-          API_KEY: ${{ secrets.SBOM_API_KEY }}
-          KEY_ID: ${{ secrets.SECURE_SBOM_KEYID }}
+        with:
+          sbom_file: <</path/to/sbom/file>>
+          secure_sbom_action: sign
+          api_key: ${{ secrets.SBOM_API_KEY }}
+          key_id: ${{ secrets.SECURE_SBOM_KEYID }}
 ```
 
 ```yaml

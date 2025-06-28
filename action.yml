@@ -1,20 +1,31 @@
 name: 'Secure SBOM Action'
-description: 'Sign and verify SBOMs using Secure SBOM API'
+description: 'Sign and verify SBOMs using the Secure SBOM API'
 author: 'ShiftLeftCyber'
+
 inputs:
-  keyid:
+  key_id:
     description: 'Key ID to use for signing or verifying'
     required: true
   api_key:
-    description: 'API key for authenticating with Secure SBOM API'
+    description: 'API key for authenticating with the Secure SBOM API'
     required: true
-  action:
+  secure_sbom_action:
     description: 'Action to perform: sign or verify'
     required: true
     default: sign
+  sbom_file:
+    description: 'Path to the SBOM file to sign or verify'
+    required: true
+
 runs:
   using: 'docker'
-  image: 'Dockerfile'
+  image: 'docker://ghcr.io/shiftleftcyber/secure-sbom-action:latest'
+  env:
+    SBOM_FILE: ${{ inputs.sbom_file }}
+    KEY_ID: ${{ inputs.key_id }}
+    API_KEY: ${{ inputs.api_key }}
+    SECURE_SBOM_ACTION: ${{ inputs.secure_sbom_action }}
+
 branding:
-  icon: 'upload-cloud'
+  icon: 'shield'
   color: 'blue'
