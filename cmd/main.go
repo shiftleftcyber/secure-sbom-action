@@ -12,8 +12,8 @@ import (
 
 const (
 	defaultGatewayURL = "https://secure-sbom-api-prod-gateway-dhncnyq8.uc.gateway.dev"
-	signPath          = "signdx?sigType=simple"
-	verifyPath        = "verifydx"
+	signPath          = "v1/sbom/sign"
+	verifyPath        = "v1/sbom/verify"
 )
 
 func run(sbomFile, keyID, apiKey, gateway, action string, client *http.Client) error {
@@ -36,7 +36,7 @@ func run(sbomFile, keyID, apiKey, gateway, action string, client *http.Client) e
 		fileKey = "sbom"
 	case "verify":
 		endpoint = fmt.Sprintf("%s/%s", gateway, verifyPath)
-		fileKey = "signedSBOM"
+		fileKey = "sbom"
 	default:
 		endpoint = fmt.Sprintf("%s/%s", gateway, signPath)
 		fileKey = "sbom"
@@ -44,7 +44,7 @@ func run(sbomFile, keyID, apiKey, gateway, action string, client *http.Client) e
 
 	var requestBody bytes.Buffer
 	writer := multipart.NewWriter(&requestBody)
-	_ = writer.WriteField("keyid", keyID)
+	_ = writer.WriteField("id", keyID)
 
 	fileWriter, err := writer.CreateFormFile(fileKey, filepath.Base(sbomFile))
 	if err != nil {
