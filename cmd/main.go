@@ -44,7 +44,7 @@ func run(sbomFile, keyID, apiKey, gateway, action string, client *http.Client) e
 
 	var requestBody bytes.Buffer
 	writer := multipart.NewWriter(&requestBody)
-	_ = writer.WriteField("id", keyID)
+	_ = writer.WriteField("key_id", keyID)
 
 	fileWriter, err := writer.CreateFormFile(fileKey, filepath.Base(sbomFile))
 	if err != nil {
