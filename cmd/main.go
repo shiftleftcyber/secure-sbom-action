@@ -12,8 +12,8 @@ import (
 
 const (
 	defaultGatewayURL = "https://secure-sbom-api-prod-gateway-dhncnyq8.uc.gateway.dev"
-	signPath          = "v1/sbom/sign"
-	verifyPath        = "v1/sbom/verify"
+	signPath          = "api/v1/sbom/sign"
+	verifyPath        = "api/v1/sbom/verify"
 )
 
 func run(sbomFile, keyID, apiKey, gateway, action string, client *http.Client) error {
