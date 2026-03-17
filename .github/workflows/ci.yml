@@ -36,7 +36,7 @@ jobs:
           fi
 
       - name: Build binary
-        run: go build ./cmd/main.go
+        run: go build -C cmd -o secure-sbom-action
 
       - name: Run unit tests
         run: go test -v -cover ./...
