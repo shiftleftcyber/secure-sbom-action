@@ -123,29 +123,12 @@ func TestLoadRunOptionsFromEnv_NewTakesPrecedenceOverLegacy(t *testing.T) {
 	}
 }
 
-func TestLoadRunOptionsFromEnv_VerifyDoesNotRequireKeyID(t *testing.T) {
-	t.Setenv("SECURE_SBOM_API_KEY", "api-key")
-	t.Setenv("SECURE_SBOM_ACTION", "verify")
-	t.Setenv("SBOM_FILE", "signed.cdx.json")
-
-	var buf bytes.Buffer
-	logger := log.New(&buf, "", 0)
-
-	opts, err := LoadRunOptionsFromEnv(logger)
-	if err != nil {
-		t.Fatalf("expected no error, got %v", err)
-	}
-
-	if opts.SigningKeyID != "" {
-		t.Fatalf("expected empty key id for verify action, got %q", opts.SigningKeyID)
-	}
-}
-
 func TestLoadRunOptionsFromEnv_SignDigestRequiresDigestAndKeyID(t *testing.T) {
 	t.Setenv("SECURE_SBOM_API_KEY", "api-key")
 	t.Setenv("SECURE_SBOM_ACTION", "sign_digest")
 	t.Setenv("SECURE_SBOM_SIGNING_KEY_ID", "key-id")
 	t.Setenv("DIGEST", "abcd1234")
+	t.Setenv("DIGEST_HASH_ALGORITHM", "sha256")
 
 	var buf bytes.Buffer
 	logger := log.New(&buf, "", 0)

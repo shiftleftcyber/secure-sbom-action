@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -9,7 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"encoding/json"
+	"time"
 )
 
 type HTTPClient interface {
@@ -20,9 +21,9 @@ const (
 	defaultGatewayURL = "https://secure-sbom-api-prod-gateway-dhncnyq8.uc.gateway.dev"
 	signPath          = "api/v1/sbom/sign"
 	verifyPath        = "api/v1/sbom/verify"
-	signPathV2 		  = "api/v2/sbom/sign"
+	signPathV2        = "api/v2/sbom/sign"
 	verifyPathV2      = "api/v2/sbom/verify"
-	signDigestPathV1      = "api/v1/digest/sign"
+	signDigestPathV1  = "api/v1/digest/sign"
 )
 
 func run(opts RunOptions, client HTTPClient) error {
@@ -46,7 +47,9 @@ func run(opts RunOptions, client HTTPClient) error {
 	if err != nil {
 		return fmt.Errorf("request failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	body, _ := io.ReadAll(resp.Body)
 
@@ -125,13 +128,18 @@ func buildMultipartSBOMRequest(opts RunOptions, endpoint string) (*http.Request,
 	if err != nil {
 		return nil, fmt.Errorf("failed to open sbom file: %w", err)
 	}
-	defer fileHandle.Close()
+	defer func() {
+		_ = fileHandle.Close()
+	}()
 
 	if _, err := io.Copy(fileWriter, fileHandle); err != nil {
 		return nil, fmt.Errorf("failed to copy file contents: %w", err)
 	}
 
-	writer.Close()
+	err = writer.Close()
+	if err != nil {
+		return nil, err
+	}
 
 	req, err := http.NewRequest("POST", endpoint, &requestBody)
 	if err != nil {
@@ -176,8 +184,9 @@ func buildJSONSBOMRequest(opts RunOptions, endpoint string) (*http.Request, erro
 func buildDigestRequest(opts RunOptions, endpoint string) (*http.Request, error) {
 
 	payload := map[string]string{
-		"digest": opts.Digest,
+		"digest_b64": opts.Digest,
 		"key_id": opts.SigningKeyID,
+		"hash_algorithm": opts.DigestHash,
 	}
 
 	body, err := json.Marshal(payload)
@@ -196,32 +205,73 @@ func buildDigestRequest(opts RunOptions, endpoint string) (*http.Request, error)
 }
 
 func handleResponse(opts RunOptions, body []byte) error {
-
 	switch opts.Action {
 
 	case ActionSign, ActionSignSBOM:
+		output := signedOutputPath(opts.SBOMFilePath)
 
-		ext := filepath.Ext(opts.SBOMFilePath)
-		base := opts.SBOMFilePath[:len(opts.SBOMFilePath)-len(ext)]
-		output := base + ".signed" + ext
+		toWrite := body
+		if !opts.UseV1API {
+			extracted, err := extractSignedSBOMFromV2Response(body)
+			if err != nil {
+				return fmt.Errorf("failed to extract signed_sbom from v2 response: %w", err)
+			}
+			toWrite = extracted
+		}
 
-		if err := os.WriteFile(output, body, 0644); err != nil {
+		if err := os.WriteFile(output, toWrite, 0o644); err != nil {
 			return fmt.Errorf("failed to write signed file: %w", err)
 		}
 
 		fmt.Println("SBOM signed successfully →", output)
 
 	case ActionVerify, ActionVerifySBOM:
-
 		fmt.Println("Verification output:")
 		fmt.Println(string(body))
 
 	case ActionSignDigest:
-
 		fmt.Println("Digest signed successfully:")
 		fmt.Println(string(body))
 
+		output := signedDigestOutputPath(time.Now().UTC())
+		if err := os.WriteFile(output, body, 0o644); err != nil {
+			return fmt.Errorf("failed to write signed digest file: %w", err)
+		}
+
+		fmt.Println("Signed digest response written to →", output)
 	}
 
 	return nil
+}
+
+func extractSignedSBOMFromV2Response(body []byte) ([]byte, error) {
+	var resp map[string]json.RawMessage
+	if err := json.Unmarshal(body, &resp); err != nil {
+		return nil, fmt.Errorf("response is not valid JSON: %w", err)
+	}
+
+	signedSBOM, ok := resp["signed_sbom"]
+	if !ok {
+		return nil, fmt.Errorf("signed_sbom field not found in response")
+	}
+	if len(signedSBOM) == 0 || string(signedSBOM) == "null" {
+		return nil, fmt.Errorf("signed_sbom field is empty")
+	}
+
+	return signedSBOM, nil
+}
+
+func signedOutputPath(input string) string {
+	dir := filepath.Dir(input)
+	name := filepath.Base(input)
+
+	ext := filepath.Ext(name)
+	base := strings.TrimSuffix(name, ext)
+
+	return filepath.Join(dir, base+".signed"+ext)
+}
+
+func signedDigestOutputPath(t time.Time) string {
+	timestamp := t.Format("20060102T150405Z")
+	return filepath.Join(".", "signed-digest-"+timestamp+".json")
 }

@@ -44,10 +44,11 @@ lint:
 clean:
 	@find . -name 'profile.out' -exec rm -f {} +
 	@rm -rf secure-sbom-action
+	@rm -rf cmd/signed-digest*
 
 .PHONY: build
 build:
-	$(GO) build -o secure-sbom-action cmd/main.go
+	$(GO) build -o secure-sbom-action ./cmd
 
 .PHONY: build-docker
 build-docker:

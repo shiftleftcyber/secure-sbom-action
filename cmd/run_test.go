@@ -210,13 +210,13 @@ func TestBuildRequestDispatch(t *testing.T) {
 	}
 }
 
-func TestHandleResponseSign(t *testing.T) {
-
+func TestHandleResponseSign_V1(t *testing.T) {
 	sbom := createTempSBOM(t)
 
 	opts := newOptions()
 	opts.Action = ActionSign
 	opts.SBOMFilePath = sbom
+	opts.UseV1API = true
 
 	body := []byte(`signed`)
 
@@ -224,10 +224,41 @@ func TestHandleResponseSign(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	out := strings.Replace(sbom, ".json", ".signed.json", 1)
+	out := signedOutputPath(sbom)
 
-	if _, err := os.Stat(out); err != nil {
-		t.Fatal("signed file not created")
+	written, err := os.ReadFile(out)
+	if err != nil {
+		t.Fatalf("signed file not created: %v", err)
+	}
+
+	if string(written) != "signed" {
+		t.Fatalf("unexpected signed file contents: %q", string(written))
+	}
+}
+
+func TestHandleResponseSign_V2(t *testing.T) {
+	sbom := createTempSBOM(t)
+
+	opts := newOptions()
+	opts.Action = ActionSign
+	opts.SBOMFilePath = sbom
+	opts.UseV1API = false
+
+	body := []byte(`{"signed_sbom":{"bomFormat":"CycloneDX"}}`)
+
+	if err := handleResponse(opts, body); err != nil {
+		t.Fatal(err)
+	}
+
+	out := signedOutputPath(sbom)
+
+	written, err := os.ReadFile(out)
+	if err != nil {
+		t.Fatalf("signed file not created: %v", err)
+	}
+
+	if string(written) != `{"bomFormat":"CycloneDX"}` {
+		t.Fatalf("unexpected signed file contents: %q", string(written))
 	}
 }
 
@@ -256,12 +287,12 @@ func (f fakeRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
 }
 
 func TestRun(t *testing.T) {
-
 	sbom := createTempSBOM(t)
 
 	opts := newOptions()
 	opts.Action = ActionSign
 	opts.SBOMFilePath = sbom
+	opts.UseV1API = true
 
 	client := &http.Client{
 		Transport: fakeRoundTripper{},
@@ -269,5 +300,56 @@ func TestRun(t *testing.T) {
 
 	if err := run(opts, client); err != nil {
 		t.Fatal(err)
+	}
+
+	out := signedOutputPath(sbom)
+
+	written, err := os.ReadFile(out)
+	if err != nil {
+		t.Fatalf("signed file not created: %v", err)
+	}
+
+	if string(written) != "signed" {
+		t.Fatalf("unexpected signed file contents: %q", string(written))
+	}
+}
+
+type fakeRoundTripperV2 struct{}
+
+func (f fakeRoundTripperV2) RoundTrip(r *http.Request) (*http.Response, error) {
+	body := io.NopCloser(bytes.NewBufferString(`{"signed_sbom":{"bomFormat":"CycloneDX"}}`))
+
+	return &http.Response{
+		StatusCode: 200,
+		Body:       body,
+		Header:     make(http.Header),
+	}, nil
+}
+
+func TestRun_V2(t *testing.T) {
+	sbom := createTempSBOM(t)
+
+	opts := newOptions()
+	opts.Action = ActionSign
+	opts.SBOMFilePath = sbom
+	opts.UseV1API = false
+
+	client := &http.Client{
+		Transport: fakeRoundTripperV2{},
+	}
+
+	if err := run(opts, client); err != nil {
+		t.Fatal(err)
+	}
+
+	out := signedOutputPath(sbom)
+
+	written, err := os.ReadFile(out)
+	if err != nil {
+		t.Fatalf("signed file not created: %v", err)
+	}
+
+	if string(written) != `{"bomFormat":"CycloneDX"}` {
+		t.Fatalf("unexpected signed file contents: %q", string(written))
 	}
 }

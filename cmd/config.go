@@ -1,11 +1,11 @@
 package main
 
 import (
-	"fmt"
-	"os"
 	"errors"
-	"strings"
+	"fmt"
 	"log"
+	"os"
+	"strings"
 )
 
 type Action string
@@ -25,7 +25,8 @@ type RunOptions struct {
 	Action           Action
 	SBOMFilePath     string
 	Digest           string
-	UseV1API		 bool
+	DigestHash       string
+	UseV1API         bool
 }
 
 func (o RunOptions) APIVersion() string {
@@ -103,6 +104,14 @@ func LoadRunOptionsFromEnv(logger *log.Logger) (*RunOptions, error) {
 	if opts.Action.RequiresDigest() {
 		opts.Digest = resolver.Require(
 			"DIGEST",
+			"",
+			&errs,
+		)
+	}
+
+	if opts.Action.RequiresDigest() {
+		opts.DigestHash = resolver.Require(
+			"DIGEST_HASH_ALGORITHM",
 			"",
 			&errs,
 		)
