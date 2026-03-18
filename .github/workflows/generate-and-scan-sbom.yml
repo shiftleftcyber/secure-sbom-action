@@ -113,7 +113,7 @@ jobs:
             sbom_file: securesbom-gh-action.${{ needs.setup.outputs.sanitized_branch_name }}.cdx.signed.json
             secure_sbom_action: verify_sbom
             secure_sbom_api_key: ${{ secrets.SECURE_SBOM_API_KEY }}
-            secure_sbom_signing_key_id: ${{ secrets.SECURE_SBOM_KEYID }}
+            secure_sbom_signing_key_id: ${{ vars.SECURE_SBOM_SIGNING_KEY_ID }}
 
       - name: Upload Signed SBOM
         uses: actions/upload-artifact@v4
