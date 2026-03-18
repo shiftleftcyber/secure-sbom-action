@@ -30,9 +30,13 @@ jobs:
       - name: Build and push Docker image
         run: |
           IMAGE_NAME=ghcr.io/${{ github.repository_owner }}/secure-sbom-action
+          VERSION=${{ env.VERSION }}
+          MAJOR=$(echo "${VERSION}" | cut -d. -f1)
+
           docker build -t $IMAGE_NAME:${{ env.VERSION }} .
           docker tag $IMAGE_NAME:${{ env.VERSION }} $IMAGE_NAME:latest
           docker push $IMAGE_NAME:${{ env.VERSION }}
+          docker push $IMAGE_NAME:$MAJOR
           docker push $IMAGE_NAME:latest
 
   publish-action:
