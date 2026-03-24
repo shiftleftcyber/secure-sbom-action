@@ -59,6 +59,16 @@ inputs:
       Example:
         digest=$(openssl dgst -sha256 -binary sbom.json | base64)
     required: false
+  
+  digest_hash_algorithm:
+    description: |
+      The hashing algorithm used to generate the digest.
+
+      Required for:
+        sign_digest
+      
+      Example:
+        sha256
 
   secure_sbom_api_url:
     description: 'Optional Secure SBOM API base URL. Defaults to production.'
@@ -82,6 +92,7 @@ runs:
     SECURE_SBOM_ACTION: ${{ inputs.secure_sbom_action || inputs.action }}
     SBOM_FILE: ${{ inputs.sbom_file }}
     DIGEST: ${{ inputs.digest }}
+    DIGEST_HASH_ALGORITHM: ${{ inputs.digest_hash_algorithm }}
     SECURE_SBOM_API_URL: ${{ inputs.secure_sbom_api_url || inputs.api_url }}
     SECURE_SBOM_USE_V1_API: ${{ inputs.secure_sbom_use_v1_api }}
 
