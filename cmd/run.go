@@ -184,7 +184,7 @@ func buildJSONSBOMRequest(opts RunOptions, endpoint string) (*http.Request, erro
 func buildDigestRequest(opts RunOptions, endpoint string) (*http.Request, error) {
 
 	payload := map[string]string{
-		"digest_b64":     opts.Digest,
+		"digest":         opts.Digest,
 		"key_id":         opts.SigningKeyID,
 		"hash_algorithm": opts.DigestHash,
 	}

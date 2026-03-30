@@ -330,7 +330,7 @@ func TestRun_SignDigest_JSON(t *testing.T) {
 	if err := json.Unmarshal(gotBody, &payload); err != nil {
 		t.Fatalf("failed to unmarshal request: %v", err)
 	}
-	if payload["digest_b64"] != "Zm9vYmFy" {
+	if payload["digest"] != "Zm9vYmFy" {
 		t.Fatalf("expected digest, got %q", payload["digest"])
 	}
 	if payload["key_id"] != "key-123" {
