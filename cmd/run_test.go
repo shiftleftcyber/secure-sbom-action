@@ -165,7 +165,7 @@ func TestBuildDigestRequest(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if payload["digest_b64"] != "abcd123" {
+	if payload["digest"] != "abcd123" {
 		t.Fatal("digest missing")
 	}
 
