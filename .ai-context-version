@@ -1,0 +1,10 @@
+source: https://github.com/shiftleftcyber/slc-ai-context
+ref: 806a622
+commit: 806a6224fcdd
+installed: 2026-11-14T12:16:36Z
+mode: copy
+files:
+  - AGENTS.md
+  - AGENTS.languages.md
+  - AGENTS.go.md
+  - AGENTS.github-actions.md
